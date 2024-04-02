@@ -1,10 +1,11 @@
-import * as jspb from "google-protobuf"
+import * as jspb from 'google-protobuf'
 
-import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
+import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb'; // proto import: "google/protobuf/empty.proto"
+
 
 export class MessageRequest extends jspb.Message {
   getMessage(): string;
-  setMessage(value: string): void;
+  setMessage(value: string): MessageRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MessageRequest.AsObject;
@@ -22,7 +23,7 @@ export namespace MessageRequest {
 
 export class MessageResponse extends jspb.Message {
   getMessage(): string;
-  setMessage(value: string): void;
+  setMessage(value: string): MessageResponse;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MessageResponse.AsObject;

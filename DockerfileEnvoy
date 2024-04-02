@@ -1,4 +1,3 @@
-FROM envoyproxy/envoy:latest
-COPY ./envoy.yaml /etc/envoy/envoy.yaml
-CMD /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
-EXPOSE 8080
+FROM envoyproxy/envoy:dev-690d3aa8fdce342234e5205b01a84519bd457e81
+COPY envoy.yaml /etc/envoy/envoy.yaml
+RUN chmod go+r /etc/envoy/envoy.yaml
