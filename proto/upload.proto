@@ -17,6 +17,7 @@ message UploadRequest {
   string file_name = 1;
   int64 file_size = 2;
   repeated FileChunk chunks = 3;
+  bool is_last_chunk = 4;
 }
 
 message UploadResponse {

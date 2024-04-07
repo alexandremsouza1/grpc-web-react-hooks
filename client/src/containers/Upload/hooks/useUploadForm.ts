@@ -38,6 +38,7 @@ export const useUploadForm = (client: UploadClient) => {
           uploadRequest.setFileName(file.name);
           uploadRequest.setFileSize(file.size);
           uploadRequest.addChunks(chunk);
+          uploadRequest.setIsLastChunk(i === totalChunks - 1);
 
           const response = await new Promise<UploadResponse>((resolve, reject) => {
             client.uploadFile(uploadRequest, {}, (err, res) => {

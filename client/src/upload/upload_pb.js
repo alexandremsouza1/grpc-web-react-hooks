@@ -307,7 +307,8 @@ proto.upload.UploadRequest.toObject = function(includeInstance, msg) {
     fileName: jspb.Message.getFieldWithDefault(msg, 1, ""),
     fileSize: jspb.Message.getFieldWithDefault(msg, 2, 0),
     chunksList: jspb.Message.toObjectList(msg.getChunksList(),
-    proto.upload.FileChunk.toObject, includeInstance)
+    proto.upload.FileChunk.toObject, includeInstance),
+    isLastChunk: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
   };
 
   if (includeInstance) {
@@ -356,6 +357,10 @@ proto.upload.UploadRequest.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.upload.FileChunk;
       reader.readMessage(value,proto.upload.FileChunk.deserializeBinaryFromReader);
       msg.addChunks(value);
+      break;
+    case 4:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIsLastChunk(value);
       break;
     default:
       reader.skipField();
@@ -406,6 +411,13 @@ proto.upload.UploadRequest.serializeBinaryToWriter = function(message, writer) {
       3,
       f,
       proto.upload.FileChunk.serializeBinaryToWriter
+    );
+  }
+  f = message.getIsLastChunk();
+  if (f) {
+    writer.writeBool(
+      4,
+      f
     );
   }
 };
@@ -482,6 +494,24 @@ proto.upload.UploadRequest.prototype.addChunks = function(opt_value, opt_index) 
  */
 proto.upload.UploadRequest.prototype.clearChunksList = function() {
   return this.setChunksList([]);
+};
+
+
+/**
+ * optional bool is_last_chunk = 4;
+ * @return {boolean}
+ */
+proto.upload.UploadRequest.prototype.getIsLastChunk = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.upload.UploadRequest} returns this
+ */
+proto.upload.UploadRequest.prototype.setIsLastChunk = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 4, value);
 };
 
 

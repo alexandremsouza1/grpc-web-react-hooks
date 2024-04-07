@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
-	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
-	messagerpb "github.com/okmttdhr/grpc-web-react-hooks/proto/messenger"// Importe o pacote gerado para os protos do serviço Messenger
-	uploadpb "github.com/okmttdhr/grpc-web-react-hooks/proto/upload"       // Importe o pacote gerado para os protos do serviço Upload
+	messagerpb "github.com/okmttdhr/grpc-web-react-hooks/proto/messenger" // Importe o pacote gerado para os protos do serviço Messenger
+	uploadpb "github.com/okmttdhr/grpc-web-react-hooks/proto/upload"      // Importe o pacote gerado para os protos do serviço Upload
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -24,7 +27,6 @@ type server struct {
 	messagerpb.UnimplementedMessengerServer
 	requestsMessager []*messagerpb.MessageRequest
 	uploadpb.UnimplementedUploadServer
-	requestUpload []*uploadpb.UploadRequest
 }
 
 // Métodos para o serviço Messenger
@@ -58,23 +60,113 @@ func (s *server) CreateMessage(ctx context.Context, r *messagerpb.MessageRequest
 }
 
 func (s *server) UploadFile(ctx context.Context, r *uploadpb.UploadRequest) (*uploadpb.UploadResponse, error) {
+	fileName := r.GetFileName()
+	chunks := r.GetChunks()
+	isLastChunk := r.GetIsLastChunk()
 
-	// Exemplo simples: apenas imprime as informações recebidas
-	fmt.Printf("Recebido UploadRequest para o arquivo: %s, tamanho: %d bytes\n", r.GetFileName(), r.GetFileSize())
+	// cria uma pasta com o nome do arquivo sem a extensão
+	tempPath := fileName[:len(fileName)-4]
+	err := os.MkdirAll(tempPath, os.ModePerm)
+	if err != nil {
+			log.Printf("Erro ao criar pasta: %v", err)
+			return nil, err
+	}
 
-	// Lógica para processar os chunks do arquivo, se necessário
-	for _, chunk := range r.GetChunks() {
-		// Processar cada chunk do arquivo
-		fmt.Printf("Chunk %d recebido: %d bytes\n", chunk.GetChunkNumber(), len(chunk.GetData()))
+	// Combinar todos os chunks em um único slice de bytes
+	var data []byte
+	var chunkNum int32
+	for _, chunk := range chunks {
+			data = append(data, chunk.GetData()...)
+			chunkNum = chunk.GetChunkNumber()
+	}
+
+	// Criar o nome do arquivo completo com base no número do chunk
+	completeFileName := fmt.Sprintf("%s/%d_%s", tempPath, chunkNum, fileName)
+
+	// Salvar os dados em um arquivo
+	err = saveToFile(completeFileName, data)
+	if err != nil {
+			log.Printf("Erro ao salvar arquivo: %v", err)
+			return nil, err
+	}
+
+	// Se for o último chunk, consolidar os arquivos e limpar a pasta temporária
+	if isLastChunk {
+			consolidatedFileName := fileName // Nome do arquivo consolidado
+			err := consolidateFiles(tempPath, consolidatedFileName)
+			if err != nil {
+					log.Printf("Erro ao consolidar arquivos: %v", err)
+					return nil, err
+			}
+
+			// Remover pasta temporária
+			err = os.RemoveAll(tempPath)
+			if err != nil {
+					log.Printf("Erro ao remover pasta temporária: %v", err)
+					return nil, err
+			}
 	}
 
 	// Retornar uma mensagem de sucesso
 	resp := &uploadpb.UploadResponse{
-		Message: "Arquivo recebido com sucesso!",
+			Message: "Arquivo recebido e salvo com sucesso!",
 	}
 	return resp, nil
 }
 
+func saveToFile(fileName string, data []byte) error {
+	// Criar um novo arquivo no servidor
+	file, err := os.Create(fileName)
+	if err != nil {
+			return err
+	}
+	defer file.Close()
+
+	// Escrever os dados no arquivo
+	_, err = file.Write(data)
+	if err != nil {
+			return err
+	}
+
+	return nil
+}
+
+func consolidateFiles(tempPath, fileName string) error {
+	// Abrir arquivo consolidado para escrita
+	consolidatedFile, err := os.Create(fileName)
+	if err != nil {
+			return err
+	}
+	defer consolidatedFile.Close()
+
+	// Listar todos os arquivos na pasta temporária
+	fileInfos, err := ioutil.ReadDir(tempPath)
+	if err != nil {
+			return err
+	}
+
+	// Concatenar o conteúdo de cada arquivo no arquivo consolidado
+	for _, fileInfo := range fileInfos {
+			// Ignorar diretórios, se houver
+			if fileInfo.IsDir() {
+					continue
+			}
+
+			// Abrir arquivo para leitura
+			filePath := filepath.Join(tempPath, fileInfo.Name())
+			fileData, err := ioutil.ReadFile(filePath)
+			if err != nil {
+					return err
+			}
+
+			// Escrever conteúdo do arquivo no arquivo consolidado
+			if _, err := consolidatedFile.Write(fileData); err != nil {
+					return err
+			}
+	}
+
+	return nil
+}
 
 func main() {
 	// Cria um listener TCP na porta especificada

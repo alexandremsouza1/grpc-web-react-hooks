@@ -38,6 +38,9 @@ export class UploadRequest extends jspb.Message {
   clearChunksList(): UploadRequest;
   addChunks(value?: FileChunk, index?: number): FileChunk;
 
+  getIsLastChunk(): boolean;
+  setIsLastChunk(value: boolean): UploadRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UploadRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UploadRequest): UploadRequest.AsObject;
@@ -51,6 +54,7 @@ export namespace UploadRequest {
     fileName: string,
     fileSize: number,
     chunksList: Array<FileChunk.AsObject>,
+    isLastChunk: boolean,
   }
 }
 
