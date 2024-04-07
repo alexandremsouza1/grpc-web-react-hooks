@@ -9,10 +9,13 @@ for PROTO_FILE in proto/*.proto; do
   if [ -f "$PROTO_FILE" ]; then
     # Extrair o nome do arquivo sem a extensão
     FILENAME=$(basename "$PROTO_FILE" .proto)
-    
+    ONLY_FILE=$($PROTO_FILE | cut -d'/' -f2)
     # Determinar as pastas de saída com base no nome do arquivo proto
-    SERVER_OUTPUT_DIR="server/${FILENAME}"
+    SERVER_OUTPUT_DIR="server/${ONLY_FILE}"
     CLIENT_OUTPUT_DIR="client/src/${FILENAME}"
+
+    # Deletar as pastas de saída, se existirem
+    rm -rf "${CLIENT_OUTPUT_DIR}"
 
     # Criar as pastas de saída, se não existirem
     mkdir -p "${SERVER_OUTPUT_DIR}"

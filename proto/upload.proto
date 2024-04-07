@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package upload;
+
+option go_package = "proto/upload";
+
+service Upload {
+  rpc UploadFile(UploadRequest) returns (UploadResponse);
+}
+
+message FileChunk {
+  int32 chunk_number = 1;
+  bytes data = 2;
+}
+
+message UploadRequest {
+  string file_name = 1;
+  int64 file_size = 2;
+  repeated FileChunk chunks = 3;
+}
+
+message UploadResponse {
+  string message = 1;
+}

@@ -1,10 +1,15 @@
-FROM golang:1.14.0-alpine3.11
+# Use the official golang image with Alpine Linux as a base
+FROM golang:1.20-alpine
 
+# Set environment variable to enable go modules
 ENV GO111MODULE=on
 
+# Set the working directory inside the container
 WORKDIR /go/src/grpc-web-react-hooks
 
+# Install git
 RUN apk add --no-cache --update \
-  git
+    git
 
-RUN go get github.com/pilu/fresh
+# Install fresh for live reloading
+RUN go install github.com/pilu/fresh@latest

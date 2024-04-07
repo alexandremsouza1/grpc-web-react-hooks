@@ -1,11 +1,11 @@
 import React from "react";
-import { MessagesContainer } from "containers/Messages";
 import { gRPCClients } from "gRPCClients";
+import { UploadContainer } from "containers/Upload";
 
 export const App = () => {
   return (
     <>
-      <MessagesContainer clients={gRPCClients} />
+      <UploadContainer clients={gRPCClients} />
     </>
   );
 };
